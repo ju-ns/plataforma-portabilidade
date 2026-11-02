@@ -2,10 +2,7 @@ package com.julia.portabilidade_api.controllers.handlers;
 
 import com.julia.portabilidade_api.dto.errors.CustomError;
 import com.julia.portabilidade_api.dto.errors.ValidationError;
-import com.julia.portabilidade_api.services.exceptions.AuthorizationUncertainException;
-import com.julia.portabilidade_api.services.exceptions.DuplicateException;
-import com.julia.portabilidade_api.services.exceptions.InvalidCentralResponseException;
-import com.julia.portabilidade_api.services.exceptions.ResourceNotFound;
+import com.julia.portabilidade_api.services.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +69,36 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationUncertainException.class)
     public ResponseEntity<CustomError> authorizationUncertain(AuthorizationUncertainException exception,HttpServletRequest request){
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
+    @ExceptionHandler(BeneficiaryNotAuthorizedException.class)
+    public ResponseEntity<CustomError> beneficiaryNotAuthorized(
+            BeneficiaryNotAuthorizedException exception,
+            HttpServletRequest request
+    ) {
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(CentralIntegrationException.class)
+    public ResponseEntity<CustomError> centralIntegration(
+            CentralIntegrationException exception,
+            HttpServletRequest request
+    ) {
         var error = new CustomError(
                 Instant.now(),
                 HttpStatus.BAD_GATEWAY.value(),

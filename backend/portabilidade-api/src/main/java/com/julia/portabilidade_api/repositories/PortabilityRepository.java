@@ -45,4 +45,8 @@ public interface PortabilityRepository extends JpaRepository<Portability, UUID> 
             @Param("targetStatus") PortabilityStatus targetStatus,
             @Param("cutoff") LocalDateTime cutoff
     );
+
+    boolean existsByBeneficiaryIdAndAuthorizationIdIsNotNull(
+            String beneficiaryId
+    );
 }
