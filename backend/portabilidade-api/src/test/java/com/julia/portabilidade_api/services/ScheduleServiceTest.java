@@ -44,7 +44,7 @@ public class ScheduleServiceTest {
 
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         beneficiaryId = "BEN001";
         beneficiaryNotAuthorizedId = "BEN002";
         beneficiaryWithNoScheduleId = "BEN_ERRO";
