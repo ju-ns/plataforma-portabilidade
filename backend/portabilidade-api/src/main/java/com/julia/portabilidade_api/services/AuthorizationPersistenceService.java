@@ -55,4 +55,23 @@ public class AuthorizationPersistenceService {
         portability.authorize(authorizationId);
         return portability;
     }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markUncertain(UUID portabilityId){
+        repository.updateStatusIfCurrent(
+                portabilityId,
+                PortabilityStatus.CRIADA,
+                PortabilityStatus.AUTORIZACAO_INCERTA
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int markAbandonedAsUncertain(LocalDateTime cutoff) {
+        return repository.updateAbandonedAuthorizations(
+                PortabilityStatus.CRIADA,
+                PortabilityStatus.AUTORIZACAO_INCERTA,
+                cutoff
+        );
+    }
 }

@@ -2,6 +2,7 @@ package com.julia.portabilidade_api.controllers.handlers;
 
 import com.julia.portabilidade_api.dto.errors.CustomError;
 import com.julia.portabilidade_api.dto.errors.ValidationError;
+import com.julia.portabilidade_api.services.exceptions.AuthorizationUncertainException;
 import com.julia.portabilidade_api.services.exceptions.DuplicateException;
 import com.julia.portabilidade_api.services.exceptions.InvalidCentralResponseException;
 import com.julia.portabilidade_api.services.exceptions.ResourceNotFound;
@@ -67,6 +68,18 @@ public class GlobalExceptionHandler {
             err.addError(f.getField(), f.getDefaultMessage());
         }
         return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(AuthorizationUncertainException.class)
+    public ResponseEntity<CustomError> authorizationUncertain(AuthorizationUncertainException exception,HttpServletRequest request){
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
     }
 
 
