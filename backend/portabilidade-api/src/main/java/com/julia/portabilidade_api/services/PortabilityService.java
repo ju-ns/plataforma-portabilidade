@@ -13,14 +13,13 @@ import com.julia.portabilidade_api.services.exceptions.InvalidCentralResponseExc
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,60 +29,99 @@ public class PortabilityService {
     private final CentralClient centralClient;
     private final AuthorizationPersistenceService persistenceService;
 
+
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public AuthorizationResult registerAuthorization(RegisterAuthorizationRequest request){
+    public AuthorizationResult registerAuthorization(
+            RegisterAuthorizationRequest request
+    ) {
         var existing = repository.findByIdempotencyKey(
-                request.idempotencyKey());
+                request.idempotencyKey()
+        );
 
         if (existing.isPresent()) {
             return reuse(existing.get(), request);
         }
+
+        return createAuthorization(request);
+    }
+
+    private AuthorizationResult createAuthorization(
+            RegisterAuthorizationRequest request
+    ) {
         Portability reserved;
-        try{
+
+        try {
             reserved = persistenceService.reserve(
                     request.beneficiaryId(),
                     request.idempotencyKey()
             );
-        } catch(DataIntegrityViolationException exception){
-            var concurrent = repository.findByIdempotencyKey(
+
+        } catch (DataIntegrityViolationException exception) {
+            var existing = repository.findByIdempotencyKey(
                     request.idempotencyKey()
-            );
-            if(concurrent.isEmpty()){
-                throw exception;
-            }
-            return reuse(concurrent.get(), request);
+            ).orElseThrow(() -> exception);
+
+            return reuse(existing, request);
         }
 
-        try{
-            var response = centralClient.registerAuthorization(request);
+        return authorizeReserved(reserved, request);
+    }
 
-            if (response == null
-                    || response.authorizationId() == null
-                    || response.authorizationId().isBlank()) {
-                throw new InvalidCentralResponseException(
-                        "A Central retornou uma autorização inválida."
-                );
-            }
+    private AuthorizationResult authorizeReserved(
+            Portability reserved,
+            RegisterAuthorizationRequest request
+    ) {
+        try {
+            String authorizationId = requestAuthorizationId(request);
+
             var authorized = persistenceService.authorize(
                     reserved.getId(),
-                    response.authorizationId());
+                    authorizationId
+            );
+
             return new AuthorizationResult(authorized, true);
+
+        } catch (RestClientException
+                 | InvalidCentralResponseException
+                 | DataAccessException exception) {
+
+            throw handleUncertainAuthorization(reserved, exception);
         }
-        catch (RestClientException
-               | InvalidCentralResponseException
-               | DataAccessException exception) {
-            try{
-                persistenceService.markUncertain(reserved.getId());
-            } catch (DataAccessException persistenceException) {
-                exception.addSuppressed(persistenceException);
-            }
-            throw new AuthorizationUncertainException(
-                    "Não foi possível confirmar a autorização. "
-                            + "Não envie uma nova chave para esta solicitação; "
-                            + "o resultado precisa ser verificado com a Central.",
-                    exception
+    }
+
+    private String requestAuthorizationId(
+            RegisterAuthorizationRequest request
+    ) {
+        var response = centralClient.registerAuthorization(request);
+
+        if (response == null
+                || response.authorizationId() == null
+                || response.authorizationId().isBlank()) {
+            throw new InvalidCentralResponseException(
+                    "A Central retornou uma autorização inválida."
             );
         }
+
+        return response.authorizationId();
+    }
+
+    private AuthorizationUncertainException handleUncertainAuthorization(
+            Portability reserved,
+            RuntimeException cause
+    ) {
+        try {
+            persistenceService.markUncertain(reserved.getId());
+
+        } catch (DataAccessException persistenceException) {
+            cause.addSuppressed(persistenceException);
+        }
+
+        return new AuthorizationUncertainException(
+                "Não foi possível confirmar a autorização. "
+                        + "Não envie uma nova chave para esta solicitação; "
+                        + "o resultado precisa ser verificado com a Central.",
+                cause
+        );
     }
 
     private AuthorizationResult reuse(
@@ -104,7 +142,6 @@ public class PortabilityService {
             );
         }
 
-        // Esta chamada recuperou um registro existente.
         return new AuthorizationResult(existing, false);
     }
 

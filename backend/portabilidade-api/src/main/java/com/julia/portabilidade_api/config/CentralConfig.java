@@ -23,7 +23,8 @@ public class CentralConfig {
 
 
         return RestClient.builder()
-                .baseUrl("http://localhost:4000")
+                .baseUrl(baseUrl)
+                .requestFactory(factory)
                 .build();
     }
 
