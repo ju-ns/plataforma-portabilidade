@@ -116,7 +116,7 @@ public class GlobalExceptionHandler {
     ) {
         var error = new CustomError(
                 Instant.now(),
-                HttpStatus.UNPROCESSABLE_CONTENT.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 exception.getMessage(),
                 request.getRequestURI()
         );
@@ -137,6 +137,22 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
+    @ExceptionHandler(CentralUnavailableException.class)
+    public ResponseEntity<CustomError> centralUnavailable(
+            CentralUnavailableException exception,
+            HttpServletRequest request
+    ) {
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(error);
     }
 
 

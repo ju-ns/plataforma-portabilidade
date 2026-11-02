@@ -28,9 +28,8 @@ public class PortabilityOperationPersistenceService {
     public Portability reserve(
             CreatePortabilityRequest request,
             String requestHash,
-            String authorizationId,
-            List<InstallmentResponse> selected
-    ){
+            String authorizationId
+    ) {
         var portability = Portability.builder()
                 .beneficiaryId(request.beneficiaryId())
                 .authorizationId(authorizationId)
@@ -45,14 +44,10 @@ public class PortabilityOperationPersistenceService {
 
         repository.saveAndFlush(portability);
 
-        var installments = selected.stream()
-                .map(item -> {
+        var installments = request.installmentIds().stream()
+                .map(installmentId -> {
                     var installment = new Installment();
-                    installment.setInstallmentId(item.installmentId());
-                    installment.setAgreementId(item.agreementId());
-                    installment.setAmount(item.amount());
-                    installment.setDeductionDate(item.deductionDate());
-                    installment.setStatus(item.status());
+                    installment.setInstallmentId(installmentId);
                     installment.setPortability(portability);
                     return installment;
                 })
@@ -83,5 +78,35 @@ public class PortabilityOperationPersistenceService {
                 PortabilityStatus.CRIADA,
                 PortabilityStatus.PORTABILIDADE_INCERTA
         );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Portability applyCentralStatus(
+            UUID id,
+            PortabilityStatus status,
+            String rejectionReason) {
+        if (status == PortabilityStatus.CONFIRMADA
+                || status == PortabilityStatus.REJEITADA) {
+            repository.completeIfPending(
+                    id,
+                    PortabilityStatus.PENDENTE,
+                    status,
+                    status == PortabilityStatus.REJEITADA
+                            ? rejectionReason
+                            : null
+            );
+        } else if (status != PortabilityStatus.PENDENTE) {
+            throw new IllegalArgumentException(
+                    "Status não suportado para acompanhamento."
+            );
+        }
+
+        // Retorna o estado atual, inclusive se outra consulta
+        // já tiver concluído a operação.
+        return repository.findByIdAndRequestHashIsNotNull(id)
+                .orElseThrow(() -> new ResourceNotFound(
+                        "Operação de portabilidade não encontrada."
+                ));
+
     }
 }

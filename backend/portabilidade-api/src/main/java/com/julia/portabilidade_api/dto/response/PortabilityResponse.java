@@ -9,14 +9,16 @@ public record PortabilityResponse(
         UUID id,
         String beneficiaryId,
         String protocol,
-        PortabilityStatus status
+        PortabilityStatus status,
+        String rejectionReason
 ) {
     public PortabilityResponse(Portability portability) {
         this(
                 portability.getId(),
                 portability.getBeneficiaryId(),
                 portability.getProtocolCentral(),
-                portability.getStatus()
+                portability.getStatus(),
+                portability.getRejectionReason()
         );
     }
 }

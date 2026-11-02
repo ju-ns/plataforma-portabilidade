@@ -27,7 +27,7 @@ public interface PortabilityRepository extends JpaRepository<Portability, UUID> 
         where p.id = :id
           and p.status = :currentStatus
         """)
-    int updateStatusIfCurrent(
+    void updateStatusIfCurrent(
             @Param("id") UUID id,
             @Param("currentStatus") PortabilityStatus currentStatus,
             @Param("targetStatus") PortabilityStatus targetStatus
@@ -46,6 +46,22 @@ public interface PortabilityRepository extends JpaRepository<Portability, UUID> 
             @Param("cutoff") LocalDateTime cutoff
     );
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update tb_portability p
+        set p.status = :finalStatus,
+            p.rejectionReason = :rejectionReason
+        where p.id = :id
+          and p.status = :pendingStatus
+          and p.requestHash is not null
+        """)
+    void completeIfPending(
+            @Param("id") UUID id,
+            @Param("pendingStatus") PortabilityStatus pendingStatus,
+            @Param("finalStatus") PortabilityStatus finalStatus,
+            @Param("rejectionReason") String rejectionReason
+    );
+
     boolean existsByBeneficiaryIdAndAuthorizationIdIsNotNull(
             String beneficiaryId
     );
@@ -54,4 +70,6 @@ public interface PortabilityRepository extends JpaRepository<Portability, UUID> 
     findFirstByBeneficiaryIdAndAuthorizedAtIsNotNullOrderByAuthorizedAtDesc(
             String beneficiaryId
     );
+
+    Optional<Portability> findByIdAndRequestHashIsNotNull(UUID id);
 }

@@ -5,16 +5,14 @@ import com.julia.portabilidade_api.dto.request.CreatePortabilityRequest;
 import com.julia.portabilidade_api.entities.Portability;
 import com.julia.portabilidade_api.entities.PortabilityStatus;
 import com.julia.portabilidade_api.repositories.PortabilityRepository;
-import com.julia.portabilidade_api.services.exceptions.BeneficiaryNotAuthorizedException;
-import com.julia.portabilidade_api.services.exceptions.DuplicateException;
-import com.julia.portabilidade_api.services.exceptions.InvalidCentralResponseException;
-import com.julia.portabilidade_api.services.exceptions.PortabilityUncertainException;
+import com.julia.portabilidade_api.services.exceptions.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 
 import java.nio.charset.StandardCharsets;
@@ -29,7 +27,6 @@ import java.util.stream.Stream;
 public class PortabilityOperationService {
 
     private final PortabilityRepository repository;
-    private final ScheduleService scheduleService;
     private final CentralClient centralClient;
     private final PortabilityOperationPersistenceService persistenceService;
 
@@ -41,11 +38,10 @@ public class PortabilityOperationService {
                 request.idempotencyKey()
         );
 
-        if (existing.isPresent()) {
-            return reuse(existing.get(), hash);
-        }
+        return existing.map(
+                portability -> reuse(portability, hash))
+                .orElseGet(() -> createNew(request, hash));
 
-        return createNew(request, hash);
     }
 
     private Portability createNew(
@@ -60,19 +56,13 @@ public class PortabilityOperationService {
                         "O beneficiário precisa registrar a autorização."
                 ));
 
-        var selected = scheduleService.getSelectedInstallments(
-                request.beneficiaryId(),
-                request.installmentIds()
-        );
-
         Portability reserved;
 
         try {
             reserved = persistenceService.reserve(
                     request,
                     hash,
-                    authorization.getAuthorizationId(),
-                    selected
+                    authorization.getAuthorizationId()
             );
 
         } catch (DataIntegrityViolationException exception) {
@@ -85,7 +75,6 @@ public class PortabilityOperationService {
 
         return submit(reserved, request);
     }
-
     private Portability submit(
             Portability reserved,
             CreatePortabilityRequest request
@@ -99,6 +88,14 @@ public class PortabilityOperationService {
             return persistenceService.markPending(
                     reserved.getId(),
                     response.protocol()
+            );
+
+        } catch (HttpServerErrorException.ServiceUnavailable exception) {
+            var uncertain = handleUncertainOperation(reserved, exception);
+
+            throw new CentralUnavailableException(
+                    "A Central está indisponível no momento.",
+                    uncertain
             );
 
         } catch (RestClientException

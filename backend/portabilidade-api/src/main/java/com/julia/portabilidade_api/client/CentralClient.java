@@ -4,8 +4,10 @@ package com.julia.portabilidade_api.client;
 import com.julia.portabilidade_api.dto.request.CreatePortabilityRequest;
 import com.julia.portabilidade_api.dto.request.RegisterAuthorizationRequest;
 import com.julia.portabilidade_api.dto.response.CentralPortabilityResponse;
+import com.julia.portabilidade_api.dto.response.CentralPortabilityStatusResponse;
 import com.julia.portabilidade_api.dto.response.InstallmentResponse;
 import com.julia.portabilidade_api.dto.response.RegisterAuthorizationResponse;
+import com.julia.portabilidade_api.entities.PortabilityStatus;
 import com.julia.portabilidade_api.services.exceptions.CentralIntegrationException;
 import com.julia.portabilidade_api.services.exceptions.InvalidCentralResponseException;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +86,43 @@ public class CentralClient {
         }
 
         return response;
+    }
+
+    public CentralPortabilityStatusResponse getPortabilityStatus(
+            String protocol
+    ) {
+        try {
+            var response = restClient.get()
+                    .uri("/operacoes-portabilidade/{protocol}", protocol)
+                    .retrieve()
+                    .toEntity(CentralPortabilityStatusResponse.class);
+
+            if (response.getStatusCode().value() == 204) {
+                return new CentralPortabilityStatusResponse(
+                        PortabilityStatus.PENDENTE,
+                        null
+                );
+            }
+
+            var body = response.getBody();
+
+            if (response.getStatusCode().value() != 200
+                    || body == null
+                    || (body.status() != PortabilityStatus.CONFIRMADA
+                    && body.status() != PortabilityStatus.REJEITADA)) {
+                throw new InvalidCentralResponseException(
+                        "A Central retornou um status de portabilidade inválido."
+                );
+            }
+
+            return body;
+
+        } catch (RestClientException exception) {
+            throw new CentralIntegrationException(
+                    "Não foi possível consultar o status na Central.",
+                    exception
+            );
+        }
     }
 
 }
