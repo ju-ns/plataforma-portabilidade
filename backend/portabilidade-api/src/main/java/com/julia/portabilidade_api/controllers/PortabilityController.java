@@ -25,13 +25,19 @@ public class PortabilityController {
     public ResponseEntity<AuthorizationResponse> registerAuthorization(
             @Valid @RequestBody RegisterAuthorizationRequest request)
     {
-        var portability = service.registerAuthorization(request);
+        var result = service.registerAuthorization(request);
+        var portability = result.portability();
         var response = new AuthorizationResponse(portability);
 
-        HttpStatus httpStatus =
-                portability.getStatus() == PortabilityStatus.CRIADA
-                        ? HttpStatus.ACCEPTED
-                        : HttpStatus.OK;
-        return ResponseEntity.status(httpStatus).body(response);
+        HttpStatus status;
+
+        if (result.created()) {
+            status = HttpStatus.CREATED;
+        } else if (portability.getStatus() == PortabilityStatus.CRIADA) {
+            status = HttpStatus.ACCEPTED;
+        } else {
+            status = HttpStatus.OK;
+        }
+        return ResponseEntity.status(status).body(response);
     }
 }

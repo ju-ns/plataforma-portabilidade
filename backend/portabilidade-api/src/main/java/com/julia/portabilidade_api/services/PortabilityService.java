@@ -3,6 +3,7 @@ package com.julia.portabilidade_api.services;
 import com.julia.portabilidade_api.client.CentralClient;
 
 import com.julia.portabilidade_api.dto.request.RegisterAuthorizationRequest;
+import com.julia.portabilidade_api.dto.response.AuthorizationResult;
 import com.julia.portabilidade_api.entities.Portability;
 import com.julia.portabilidade_api.repositories.PortabilityRepository;
 import com.julia.portabilidade_api.services.exceptions.DuplicateException;
@@ -26,11 +27,12 @@ public class PortabilityService {
     private final AuthorizationPersistenceService persistenceService;
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public Portability registerAuthorization(RegisterAuthorizationRequest request){
-        var existing = repository.findByIdempotencyKey(request.idempotencyKey());
+    public AuthorizationResult registerAuthorization(RegisterAuthorizationRequest request){
+        var existing = repository.findByIdempotencyKey(
+                request.idempotencyKey());
 
-        if(existing.isPresent()){
-            return validateExisting(existing.get(), request);
+        if (existing.isPresent()) {
+            return reuse(existing.get(), request);
         }
         Portability reserved;
         try{
@@ -45,7 +47,7 @@ public class PortabilityService {
             if(concurrent.isEmpty()){
                 throw exception;
             }
-            return validateExisting(concurrent.get(), request);
+            return reuse(concurrent.get(), request);
         }
 
         var response = centralClient.registerAuthorization(request);
@@ -58,28 +60,24 @@ public class PortabilityService {
             );
         }
 
-        return persistenceService.authorize(
+        var authorized = persistenceService.authorize(
                 reserved.getId(),
-                response.authorizationId()
-        );
+                response.authorizationId());
+        return new AuthorizationResult(authorized, true);
     }
 
-    private Portability validateExisting(
+    private AuthorizationResult reuse(
             Portability existing,
             RegisterAuthorizationRequest request
-    ){
-
+    ) {
         if (!existing.getBeneficiaryId().equals(request.beneficiaryId())) {
             throw new DuplicateException(
                     "Esta chave de idempotência já foi usada para outro beneficiário."
             );
         }
 
-        return existing;
+        // Esta chamada recuperou um registro existente.
+        return new AuthorizationResult(existing, false);
     }
-
-
-
-
 
 }
