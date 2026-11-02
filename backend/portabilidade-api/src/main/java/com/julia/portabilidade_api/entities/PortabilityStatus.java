@@ -1,6 +1,6 @@
-package com.julia.portabilidade_api.entity;
+package com.julia.portabilidade_api.entities;
 
-public enum StatusPortabilidade {
+public enum PortabilityStatus {
 
     CRIADA,
     REJEITADA,

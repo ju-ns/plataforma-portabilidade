@@ -1,4 +1,4 @@
-package com.julia.portabilidade_api.entity;
+package com.julia.portabilidade_api.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -9,22 +9,22 @@ import java.util.UUID;
 
 @Data
 @Entity(name="tb_parcela")
-public class Parcela {
+public class Installment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String parcelaId;
+    private String installmentId;
 
-    private String convenioId;
+    private String agreementId;
 
-    private BigDecimal valor;
+    private BigDecimal amount;
 
-    private LocalDate dataDesconto;
+    private LocalDate deductionDate;
     private String status;
 
     @ManyToOne
-    @JoinColumn(name="portabilidade_id")
-    private Portabilidade portabilidade;
+    @JoinColumn(name="portability_id")
+    private Portability portability;
 
 }
