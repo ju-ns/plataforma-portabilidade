@@ -5,7 +5,8 @@ public enum StatusPortabilidade {
     CRIADA,
     REJEITADA,
     CONFIRMADA,
-    AGUARDANDO_PROCESSAMENTO
+    PENDENTE,
+    AUTORIZADA
 
 
 }

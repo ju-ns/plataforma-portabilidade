@@ -1,14 +1,20 @@
 package com.julia.portabilidade_api.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Builder
 @Entity(name="tb_portabilidade")
 public class Portabilidade {
 
@@ -18,7 +24,7 @@ public class Portabilidade {
 
     private String beneficiarioId;
     private String autorizacaoId;
-    private String protocolo;
+    private String protocoloCentral;
     private String bancoDestino;
     private String agenciaDestino;
     private String contaDestino;
@@ -27,10 +33,14 @@ public class Portabilidade {
     private StatusPortabilidade status;
     private String motivoRejeicao;
     private LocalDateTime criadaEm;
-    private LocalDateTime atualizadaEm;
+
+    private LocalDateTime autorizadaEm;
+
+
 
     @OneToMany (mappedBy = "portabilidade")
     private List<Parcela> parcelas;
+
 
 
 }
