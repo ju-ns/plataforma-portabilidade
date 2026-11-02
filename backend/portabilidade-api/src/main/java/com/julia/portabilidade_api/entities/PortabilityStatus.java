@@ -7,7 +7,8 @@ public enum PortabilityStatus {
     CONFIRMADA,
     PENDENTE,
     AUTORIZADA,
-    AUTORIZACAO_INCERTA
+    AUTORIZACAO_INCERTA,
+    PORTABILIDADE_INCERTA
 
 
 }

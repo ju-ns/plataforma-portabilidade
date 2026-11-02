@@ -1,7 +1,9 @@
 package com.julia.portabilidade_api.client;
 
 
+import com.julia.portabilidade_api.dto.request.CreatePortabilityRequest;
 import com.julia.portabilidade_api.dto.request.RegisterAuthorizationRequest;
+import com.julia.portabilidade_api.dto.response.CentralPortabilityResponse;
 import com.julia.portabilidade_api.dto.response.InstallmentResponse;
 import com.julia.portabilidade_api.dto.response.RegisterAuthorizationResponse;
 import com.julia.portabilidade_api.services.exceptions.CentralIntegrationException;
@@ -13,6 +15,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -49,6 +52,38 @@ public class CentralClient {
                     exception
             );
         }
+    }
+
+    public CentralPortabilityResponse createPortability(
+            CreatePortabilityRequest request,
+            String authorizationId
+    ) {
+        var body = Map.of(
+                "beneficiarioId", request.beneficiaryId(),
+                "autorizacaoId", authorizationId,
+                "parcelaIds", request.installmentIds(),
+                "contaDestino", Map.of(
+                        "banco", request.destinationBank(),
+                        "agencia", request.destinationBranch(),
+                        "conta", request.destinationAccount()
+                )
+        );
+
+        var response = restClient.post()
+                .uri("/operacoes-portabilidade")
+                .body(body)
+                .retrieve()
+                .body(CentralPortabilityResponse.class);
+
+        if (response == null
+                || response.protocol() == null
+                || response.protocol().isBlank()) {
+            throw new InvalidCentralResponseException(
+                    "A Central retornou um protocolo inválido."
+            );
+        }
+
+        return response;
     }
 
 }

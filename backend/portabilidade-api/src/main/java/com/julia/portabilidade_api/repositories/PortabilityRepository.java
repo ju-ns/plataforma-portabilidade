@@ -49,4 +49,9 @@ public interface PortabilityRepository extends JpaRepository<Portability, UUID> 
     boolean existsByBeneficiaryIdAndAuthorizationIdIsNotNull(
             String beneficiaryId
     );
+
+    Optional<Portability>
+    findFirstByBeneficiaryIdAndAuthorizedAtIsNotNullOrderByAuthorizedAtDesc(
+            String beneficiaryId
+    );
 }

@@ -41,11 +41,22 @@ public class Portability {
     @Column(nullable = false, unique = true)
     private String idempotencyKey;
 
+    @Column(length = 64)
+    private String requestHash;
+
+
     public void authorize(String authorizationId){
         this.authorizationId = authorizationId;
         this.status = PortabilityStatus.AUTORIZADA;
         this.authorizedAt = LocalDateTime.now();
     }
+
+    public void markPending(String protocol) {
+        this.protocolCentral = protocol;
+        this.status = PortabilityStatus.PENDENTE;
+    }
+
+
 
 
 }

@@ -109,6 +109,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
     }
 
+    @ExceptionHandler(InvalidInstallmentSelectionException.class)
+    public ResponseEntity<CustomError> invalidInstallmentSelection(
+            InvalidInstallmentSelectionException exception,
+            HttpServletRequest request
+    ) {
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.UNPROCESSABLE_CONTENT.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.unprocessableContent().body(error);
+    }
+
+    @ExceptionHandler(PortabilityUncertainException.class)
+    public ResponseEntity<CustomError> portabilityUncertain(
+            PortabilityUncertainException exception,
+            HttpServletRequest request
+    ) {
+        var error = new CustomError(
+                Instant.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
 
 
 
