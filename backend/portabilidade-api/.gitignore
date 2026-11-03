@@ -33,7 +33,3 @@ build/
 .vscode/
 
 /data
-
-application.properties
-application-dev.properties
-application-prod.properties
