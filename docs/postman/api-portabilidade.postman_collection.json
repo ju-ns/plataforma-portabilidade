@@ -1,0 +1,205 @@
+{
+  "info": {
+    "_postman_id": "f596d10e-0c1c-481c-ab84-1aed4afcd654",
+    "name": "api-portabilidade",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42897304",
+    "_collection_link": "https://go.postman.co/collection/42897304-f596d10e-0c1c-481c-ab84-1aed4afcd654?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "mock-central-convenios",
+      "item": [
+        {
+          "name": "Criar autorização",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"beneficiarioId\": \"BEN001\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host_central}}/operacoes-portabilidade",
+              "host": [
+                "{{host_central}}"
+              ],
+              "path": [
+                "operacoes-portabilidade"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Erro-simulado",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"beneficiarioId\": \"BEN_ERRO\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host_central}}/operacoes-portabilidade",
+              "host": [
+                "{{host_central}}"
+              ],
+              "path": [
+                "operacoes-portabilidade"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host_central}}/operacoes-portabilidade/8dba4b5b-b473-4c4d-a12b-374d2b794758",
+              "host": [
+                "{{host_central}}"
+              ],
+              "path": [
+                "operacoes-portabilidade",
+                "8dba4b5b-b473-4c4d-a12b-374d2b794758"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "backend",
+      "item": [
+        {
+          "name": "consultar a agenda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/beneficiaries/BEN001/schedule",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "beneficiaries",
+                "BEN001",
+                "schedule"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "registrar o opt-in",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"beneficiaryId\": \"BEN_ERRO\",\r\n  \"idempotencyKey\": \"opt-in-ben001-006\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/authorizations",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "authorizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "acompanhar a operação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}portabilities/ID_DA_OPERACAO",
+              "host": [
+                "{{host}}portabilities"
+              ],
+              "path": [
+                "ID_DA_OPERACAO"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "testar rejeição",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"beneficiaryId\": \"BEN002\",\r\n  \"idempotencyKey\": \"auth-ben002-teste-01\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/authorizations",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "authorizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cria a operação",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"beneficiaryId\": \"BEN002\",\r\n  \"installmentIds\": [\"P010\"],\r\n  \"destinationBank\": \"001\",\r\n  \"destinationBranch\": \"1234\",\r\n  \"destinationAccount\": \"987654-3\",\r\n  \"idempotencyKey\": \"port-ben002-teste-01\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/portabilities",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "portabilities"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -20,7 +20,7 @@ A solução integra uma API Spring Boot, uma interface React com TypeScript e o 
 plataforma-portabilidade/
 ├── backend/
 │   └── portabilidade-api/   # API Java, persistência e testes
-├── docs/                   # Design system e primeiros designs das páginas
+├── docs/                   # Design system, páginas e collection Postman
 ├── frontend/               # Aplicação React com TypeScript
 ├── simulator/
 │   └── mock-central.js     # Central fornecida pelo desafio
@@ -170,6 +170,38 @@ Content-Type: application/json
 ```
 
 `P_TESTE` é um identificador para exercitar a falha, não uma parcela existente na agenda. O simulador retorna `503` para esse beneficiário sem validar os IDs. Utilize uma chave nova para a primeira tentativa; uma chave já marcada como incerta não provoca outro POST.
+
+## Collection Postman
+
+Os arquivos para importar no Postman estão em [`docs/postman`](docs/postman/):
+
+- [Collection da API e do simulador](docs/postman/api-portabilidade.postman_collection.json).
+- [Environment de execução local](docs/postman/api-portabilidade-env.postman_environment.json).
+
+### Importação e configuração
+
+1. Inicie a Central e o backend conforme as instruções de execução.
+2. No Postman, utilize **Import** e selecione os dois arquivos JSON.
+3. Selecione o environment importado e preencha as variáveis, exportadas sem valores:
+
+   | Variável | Valor local |
+   | --- | --- |
+   | `host` | `http://localhost:8080` |
+   | `host_central` | `http://localhost:4000` |
+
+4. Utilize as requisições da pasta `backend` para exercitar a API. A pasta `mock-central-convenios` contém chamadas diretas ao simulador e não passa pelas regras da API.
+5. Antes de enviar um POST, confira se o beneficiário, as parcelas e a chave de idempotência correspondem ao cenário desejado. Os exemplos exportados incluem beneficiários diferentes.
+
+### Ordem de execução
+
+1. **Registrar opt-in:** `POST {{host}}/authorizations`.
+2. **Consultar agenda:** `GET {{host}}/beneficiaries/BEN001/schedule`, utilizando o mesmo beneficiário autorizado.
+3. **Criar operação:** `POST {{host}}/portabilities`, com as parcelas e a conta de destino do cenário.
+4. **Acompanhar operação:** `GET {{host}}/portabilities/ID_DA_OPERACAO`, substituindo `ID_DA_OPERACAO` pelo campo `id` da resposta de criação. Repita a consulta após aproximadamente cinco segundos para observar o resultado final.
+
+Na requisição exportada **“acompanhar a operação”**, ajuste a URL para incluir a barra entre `{{host}}` e `portabilities`, conforme o endereço acima. Os identificadores de acompanhamento não são preenchidos automaticamente pela collection. Na consulta direta à Central, substitua o protocolo salvo no exemplo pelo `protocol` retornado pela criação; ele é diferente do ID local da operação.
+
+Para verificar idempotência, repita o mesmo POST com a mesma chave e os mesmos dados. Para iniciar outro cenário, utilize uma chave nova. O cenário `BEN_ERRO` e sua limitação de agenda vazia estão descritos na seção de cenários do simulador.
 
 ## Endpoints da API
 
