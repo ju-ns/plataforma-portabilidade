@@ -47,7 +47,7 @@ plataforma-portabilidade/
 | Vite 8 | Servidor de desenvolvimento, proxy para a API e geração do build do frontend. |
 | ESLint e plugins de React / TypeScript | Análise estática e verificação das regras de hooks. |
 
-O frontend utiliza CSS próprio e a API nativa `fetch`. O simulador utiliza apenas módulos nativos do Node.js, sem instalação de dependências. O POM também declara Testcontainers, mas os testes de integração atuais utilizam H2 e não exigem Docker.
+O frontend utiliza CSS próprio e a API nativa `fetch`. O simulador utiliza apenas módulos nativos do Node.js, sem instalação de dependências.
 
 ## Como executar
 
@@ -64,7 +64,7 @@ Os comandos abaixo partem da raiz do repositório e devem ser executados em trê
 
 ### 1. Configurar o backend
 
-O perfil padrão é `dev`, definido por `spring.profiles.default=dev`. Os arquivos de configuração não estão mais ignorados pelo Git e são fornecidos com o projeto; não é necessário recriá-los para executar a aplicação:
+O perfil padrão é `dev`, definido por `spring.profiles.default=dev`. 
 
 - [`application.properties`](backend/portabilidade-api/src/main/resources/application.properties): nome da aplicação, perfil padrão, porta da API, configuração do JPA e endereço/timeouts da Central.
 - [`application-dev.properties`](backend/portabilidade-api/src/main/resources/application-dev.properties): conexão com H2 em memória, geração do schema, logs SQL e console H2.
