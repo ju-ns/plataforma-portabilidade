@@ -19,11 +19,7 @@ public class AuthorizationPersistenceService {
 
     private final PortabilityRepository repository;
 
-    /*
-    * reserve salva o registro com status CRIADA.
-    * O saveAndFlush força a inserção para detectar uma chave duplicada,
-    * e a transação confirma a reserva antes de retornar
-    * */
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Portability reserve(
             String beneficiaryId,
@@ -38,11 +34,7 @@ public class AuthorizationPersistenceService {
         return repository.saveAndFlush(portability);
     }
 
-    /*
-    authorize busca o registro e atualiza os dados recebidos da Central.
-    Como a entidade foi carregada dentro da transação,
-    o JPA salva as alterações ao concluir o método, sem precisar chamar save.
-     */
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Portability authorize(
             UUID portabilityId,

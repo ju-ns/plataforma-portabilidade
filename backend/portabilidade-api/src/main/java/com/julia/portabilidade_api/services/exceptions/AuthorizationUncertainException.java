@@ -5,10 +5,7 @@ public class AuthorizationUncertainException extends RuntimeException{
         super(msg);
     }
 
-    public AuthorizationUncertainException(
-            String msg,
-            Throwable cause
-    ) {
+    public AuthorizationUncertainException(String msg,Throwable cause) {
         super(msg, cause);
     }
 }

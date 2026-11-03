@@ -101,8 +101,7 @@ public class PortabilityOperationPersistenceService {
             );
         }
 
-        // Retorna o estado atual, inclusive se outra consulta
-        // já tiver concluído a operação.
+
         return repository.findByIdAndRequestHashIsNotNull(id)
                 .orElseThrow(() -> new ResourceNotFound(
                         "Operação de portabilidade não encontrada."
