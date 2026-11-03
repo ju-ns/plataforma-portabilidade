@@ -8,7 +8,7 @@ export default function App() {
   return (
     <>
       <header className="app-header">
-        <span className="app-brand">folha</span>
+        <span className="app-brand">Folha</span>
 
         <span className="app-description">
           Portabilidade de convênio
