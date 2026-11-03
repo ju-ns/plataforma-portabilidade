@@ -59,10 +59,11 @@ function ScheduleContent({
     (installment) => selectedIds.includes(installment.installmentId),
   );
 
-  const total = selectedInstallments.reduce(
-    (sum, installment) => sum + Math.round(installment.amount * 100),
-    0,
-  ) / 100;
+  const total =
+    selectedInstallments.reduce(
+      (sum, installment) => sum + Math.round(installment.amount * 100),
+      0,
+    ) / 100;
 
   function toggleInstallment(installmentId: string) {
     setSubmitError("");
@@ -83,7 +84,7 @@ function ScheduleContent({
 
     setSubmitError("");
 
-    const destination = {
+    const destination: DestinationAccount = {
       destinationBank: account.destinationBank.trim(),
       destinationBranch: account.destinationBranch.trim(),
       destinationAccount: account.destinationAccount.trim(),
@@ -123,11 +124,14 @@ function ScheduleContent({
           JSON.stringify(summary),
         );
       } catch {
-        // O resumo também será enviado pelo estado da navegação.
+        // O resumo também segue pelo estado da navegação.
       }
 
       navigate(`/portabilities/${operation.id}`, {
-        state: { summary },
+        state: {
+          summary,
+          operation,
+        },
       });
     } catch (exception) {
       setSubmitError(
@@ -150,9 +154,12 @@ function ScheduleContent({
     <>
       <StepIndicator currentStep={2} />
 
-      <section className="card schedule-card">
+      <section
+        className="card schedule-card"
+        aria-labelledby="schedule-title"
+      >
         <header className="schedule-heading">
-          <h1>Agenda de descontos</h1>
+          <h1 id="schedule-title">Agenda de descontos</h1>
 
           <p>
             Beneficiário <strong>{beneficiaryId}</strong>
@@ -190,7 +197,11 @@ function ScheduleContent({
         )}
 
         {hasSchedule && (
-          <form onSubmit={handleSubmit} noValidate aria-busy={submitting}>
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            aria-busy={submitting}
+          >
             <InstallmentsTable
               installments={schedule.installments}
               selectedIds={selectedIds}
@@ -198,7 +209,10 @@ function ScheduleContent({
               onToggle={toggleInstallment}
             />
 
-            <fieldset className="destination-fields" disabled={submitting}>
+            <fieldset
+              className="destination-fields"
+              disabled={submitting}
+            >
               <legend>Conta de recebimento</legend>
 
               <div className="destination-grid">
@@ -214,10 +228,13 @@ function ScheduleContent({
                       placeholder={placeholder}
                       required
                       onChange={(event) => {
+                        const value = event.target.value;
+
                         setAccount((current) => ({
                           ...current,
-                          [name]: event.target.value,
+                          [name]: value,
                         }));
+
                         setSubmitError("");
                       }}
                     />
@@ -227,7 +244,10 @@ function ScheduleContent({
             </fieldset>
 
             {submitError && (
-              <p className="schedule-state schedule-error" role="alert">
+              <p
+                className="schedule-state schedule-error"
+                role="alert"
+              >
                 {submitError}
               </p>
             )}
@@ -245,7 +265,9 @@ function ScheduleContent({
               <button
                 type="submit"
                 className="schedule-submit"
-                disabled={submitting || selectedInstallments.length === 0}
+                disabled={
+                  submitting || selectedInstallments.length === 0
+                }
               >
                 {submitting
                   ? "Enviando solicitação..."

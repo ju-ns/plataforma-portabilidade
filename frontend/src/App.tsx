@@ -1,23 +1,8 @@
-import { Navigate, Route, Routes, useParams } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 
-import StepIndicator from "./components/StepIndicator";
 import AuthorizationPage from "./pages/AuthorizationPage";
 import SchedulePage from "./pages/SchedulePage";
-
-function TrackingPlaceholder() {
-  const { operationId } = useParams();
-
-  return (
-    <>
-      <StepIndicator currentStep={3} />
-
-      <section className="card setup-card">
-        <h1>Acompanhamento da portabilidade</h1>
-        <p>Operação: {operationId}</p>
-      </section>
-    </>
-  );
-}
+import TrackingPage from "./pages/TrackingPage";
 
 export default function App() {
   return (
@@ -41,7 +26,7 @@ export default function App() {
 
           <Route
             path="/portabilities/:operationId"
-            element={<TrackingPlaceholder />}
+            element={<TrackingPage />}
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />

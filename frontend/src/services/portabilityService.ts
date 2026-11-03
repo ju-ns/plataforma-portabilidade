@@ -30,3 +30,13 @@ export function createPortability(
     }),
   });
 }
+
+export function getPortabilityStatus(
+  operationId: string,
+  signal?: AbortSignal,
+): Promise<PortabilityResponse> {
+  return request<PortabilityResponse>(
+    `/portabilities/${encodeURIComponent(operationId)}`,
+    { signal },
+  );
+}

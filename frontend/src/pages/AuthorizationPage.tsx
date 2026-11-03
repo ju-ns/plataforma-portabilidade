@@ -67,10 +67,11 @@ export default function AuthorizationPage() {
       }
 
       navigate(
-        `/beneficiaries/${encodeURIComponent(
-          authorization.beneficiaryId,
-        )}/schedule`,
-      );
+  `/beneficiaries/${encodeURIComponent(
+    authorization.beneficiaryId,
+  )}/schedule`,
+);
+
     } catch (exception) {
       setError(
         exception instanceof ApiError
