@@ -62,7 +62,14 @@ O backend possui Maven Wrapper; não é necessário instalar Maven separadamente
 
 Os comandos abaixo partem da raiz do repositório e devem ser executados em três terminais separados.
 
-### 1. Configurar o backend
+### Clone o repositório
+
+```bash
+git clone https://github.com/ju-ns/plataforma-portabilidade.git
+cd plataforma-portabilidade
+```
+
+### Configurar o backend
 
 O perfil padrão é `dev`, definido por `spring.profiles.default=dev`. 
 
@@ -84,7 +91,7 @@ As configurações compartilhadas são complementadas pelo arquivo do perfil `de
 
 O H2 é mantido em memória: os dados são perdidos ao encerrar a API. Não há configuração de produção incluída nesta entrega.
 
-### 2. Iniciar o simulador
+### Iniciar o simulador
 
 ```sh
 cd simulator
@@ -93,7 +100,7 @@ node mock-central.js
 
 Disponível em `http://localhost:4000`. Não é necessário executar `npm install` nessa pasta. Deixe esse terminal aberto.
 
-### 3. Iniciar o backend
+### Iniciar o backend
 
 No Windows / PowerShell:
 
@@ -116,7 +123,7 @@ sh mvnw spring-boot:run
 
 O endereço da Central e os timeouts podem ser ajustados nas propriedades `central.*`.
 
-### 4. Iniciar o frontend
+### Iniciar o frontend
 
 Em outro terminal:
 
